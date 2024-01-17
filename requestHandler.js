@@ -5,14 +5,32 @@ const orderlist_view= fs.readFileSync('./orderlist.html');
 const mariadb = require('./database/connect/mariadb');
 
 function main(response){
+    const products = [
+        { id: 1, img: './img/redRacket.png', title: 'Red Racket' },
+        { id: 2, img: './img/blueRacket.png', title: 'Blue Racket' },
+        { id: 3, img: './img/blackRacket.png', title: 'Black Racket' }
+    ];
     console.log('main');
 
     mariadb.query("select * from product", function(err, rows){
         console.log(rows);
     });
 
-    response.writeHead(200, {'Content-Type' : 'text/html'});
-    response.write(main_view);
+    let newMainView = main_view.substring(0, main_view.lastIndexOf('</div>'));
+    products.forEach(product => {
+        newMainView += `
+            <div class="card">
+                <img class="card_img" src="${product.img}">
+                <p class="card_title">${product.title}</p>
+                <input class="card_button" type="button" value="order" onclick="location.href='/order?productId=${product.id}'">
+            </div>
+        `;
+    });
+    newMainView += `
+    </body>
+    </html>
+    `;
+    response.write(newMainView);
     response.end();
 }
 
@@ -71,7 +89,7 @@ function orderlist(response){
 
         response.write("</table>");
         response.end();
-    })
+    }) 
 }
 let handle = {};    //key: value
 handle['/']= main;
